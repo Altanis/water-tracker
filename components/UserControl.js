@@ -1,7 +1,7 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Text, Pressable, ImageBackground, TextInput, BackHandler } from 'react-native';
-import AlarmNotification from 'react-native-alarm-notification';
+import Alarm from 'react-native-alarm-manager'; // The alarm manager is bugged, unable to function properly. Will be fixed in future release.
 
 export default class UserControl extends React.Component {
     constructor(props) {
@@ -22,6 +22,7 @@ export default class UserControl extends React.Component {
 
             wakeTime: '',
             sleepTime: '',
+            nextReminder: '',
 
             modalVisible: false,
         };
@@ -41,24 +42,17 @@ export default class UserControl extends React.Component {
             const id = Math.random().toString(16).slice(2);
             await AsyncStorage.setItem('timers', id);
 
-            const fire_date = AlarmNotification.parseDate(new Date(Date.now() + 1000));
-            console.log(fire_date);
-            AlarmNotification.scheduleAlarm({
-                id,
-                title: 'Drink Water!',
-                message: 'It\'s time to drink water.',
-                channel: 'alarm-channel',
-                ticker: 'It\'s time to drink water.',
-                auto_cancel: false,
-                vibrate: true,
-                vibration: 100,
-                color: 'red',
-                small_icon: 'ic_launcher',
-                play_sound: true,
-                sound_name: null,
-                schedule_once: true,
-                fire_date: AlarmNotification.parseDate(new Date(Date.now() + 1000)),
-            });
+            /*Alarm.schedule({
+                alarm_time: '12:06:00',
+                alarm_title: 'Drink Water!',
+                alarm_text: 'It\'s time to drink water!',
+                alarm_sound: 'sound',
+                alarm_icon: 'icon',
+                alarm_sound_loop: true,
+                alarm_vibration: true,
+                alarm_noti_removable: true,
+                alarm_activate: true,
+            }, console.log, console.error);*/
         };
 
         createAlarm();
@@ -89,6 +83,9 @@ export default class UserControl extends React.Component {
         const hours = new Date('1/1/1970 ' + this.state.wakeTime).getHours() - new Date('1/1/1970 ' + this.state.sleepTime).getHours();
         const interval = (hours / this.state.cups) * 3.6e6;
 
+        const nextReminder = new Date(Date.now() + interval);
+        this.setState({ nextReminder: `${nextReminder.getHours()}:${nextReminder.getMinutes()}:${nextReminder.getSeconds()}` });
+
         AsyncStorage.multiSet([
             ['weight', this.state.weight],
             ['exercise', this.state.exercise],
@@ -97,7 +94,8 @@ export default class UserControl extends React.Component {
             ['timers', ''],
         ])
             .then(() => {
-                const createAlarm = async () => {
+                // fire alarm, set next reminder state
+                /*const createAlarm = async () => {
                     const id = Math.random().toString(16).slice(2);
                     await AsyncStorage.setItem('timers', id);
 
@@ -117,17 +115,18 @@ export default class UserControl extends React.Component {
                         schedule_once: true,
                         fire_date: AlarmNotification.parseDate(new Date(Date.now() + interval)),
                     });
+
+                    // when alarm is fired, set next reminder date
                 };
 
                 createAlarm();
-                setInterval(createAlarm, interval);
+                setInterval(createAlarm, interval);*/
 
                 this.setState({ view: 'home' });
             });
     }
 
     render() {
-        AsyncStorage.clear();
         switch (this.state.view) {
             case 'home': {
                 if (this.state.cups && !isNaN(this.state.cups)) {

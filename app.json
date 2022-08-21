@@ -24,7 +24,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.watertracker.watertracker"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
